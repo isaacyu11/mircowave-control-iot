@@ -3,7 +3,7 @@
 #include <WiFi.h>
 
 // 微波爐ESP32的MAC地址（请用实际的MAC地址替换）
-uint8_t microwaveMACAddress[] = {0xD0, 0xEF, 0x76, 0x44, 0xD4, 0x04};
+uint8_t microwaveMACAddress[] = {0xD0, 0xEF, 0x76, 0x44, 0xD4, 0x05};
 
 // 极限开关连接的GPIO引脚
 #define LIMIT_SWITCH_PIN 13
@@ -34,7 +34,7 @@ void setup() {
 
   // 添加对等设备（微波炉ESP32的MAC地址）
   memcpy(peerInfo.peer_addr, microwaveMACAddress, 6);
-  peerInfo.channel = 0;  
+  peerInfo.channel = 1;  
   peerInfo.encrypt = false;
   
   if (esp_now_add_peer(&peerInfo) != ESP_OK) {

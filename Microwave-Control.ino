@@ -38,6 +38,8 @@ BLYNK_WRITE(V1)
   int value = param.asInt();
 
   relayTimer = value*60000;
+
+  Serial.println("relayTimer Changed:" + String(relayTimer));
 }
 
 void onDataRecv(const esp_now_recv_info *info, const uint8_t *incomingData, int len) {
@@ -59,36 +61,44 @@ void onDataRecv(const esp_now_recv_info *info, const uint8_t *incomingData, int 
   }
 }
 
-
 void setup() {
   // Debug console
   Serial.begin(115200);
 
-  // 设置Wi-Fi模式为STA（Station）
-  WiFi.mode(WIFI_STA);
+  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
 
-  // 延迟以确保Wi-Fi模块初始化
-  delay(100); // 添加一个短暂的延迟
-  
-  // 获取MAC地址
-  String macAddress = WiFi.macAddress();
-  
-  Serial.print("MAC Address: ");
-  Serial.println(macAddress);
+  Serial.println("Set as AP_STA station.");
+  Serial.print  ("SSID: "); Serial.println(WiFi.SSID());
+  Serial.print  ("Channel: "); Serial.println(WiFi.channel());
+  Serial.print  ("IP address: "); Serial.println(WiFi.localIP());
+  delay(1000);
 
-  // 初始化ESP-NOW
-  if (esp_now_init() != ESP_OK) {
-    Serial.println("Error initializing ESP-NOW");
-    return;
+  int channel = WiFi.channel();
+  if (WiFi.softAP(ssid, pass, channel, 1)) {
+    Serial.println("AP Config Success. AP SSID: " + String(ssid));
+  } else {
+    Serial.println("AP Config failed.");
+  }
+
+  // Print MAC addresses
+  Serial.print("AP MAC: "); Serial.println(WiFi.softAPmacAddress());
+  Serial.print("STA MAC: "); Serial.println(WiFi.macAddress());
+
+
+  if (esp_now_init() == ESP_OK) {
+    Serial.println("ESP - Now Init Success");
+  } else {
+    Serial.println("ESP - Now Init Failed");
+    ESP.restart();                                // just restart if we cant init ESP-Now
   }
 
   // 注册接收回调函数
   esp_now_register_recv_cb(onDataRecv);
 
-  Blynk.begin(BLYNK_AUTH_TOKEN, ssid, pass);
-
   pinMode(2, OUTPUT); // 假设GPIO 2为输出引脚
   digitalWrite(RELAY_PIN, LOW);  // 初始化为低电平（关闭继电器）
+
+  Serial.println("done");
 }
 
 void loop() {
